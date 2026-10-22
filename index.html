@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Usciamo Questo Weekend</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@500;700&display=swap">
+<style>
+/* Layout: one centered card-less stage, big question, two chunky buttons that change size as she hesitates */
+:root {
+  --bg: #ffd1e3;
+  --ink: #2b1241;
+  --yes: #17a56b;
+  --yes-ink: #ffffff;
+  --no: #ffffff;
+  --warn: #ff4d2e;
+  --shade: #2b1241;
+  --font-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+}
+main { width: 100%; max-width: 480px; min-width: 0; text-align: left; }
+.screen { display: flex; flex-direction: column; gap: 28px; }
+.eyebrow {
+  font-weight: 700; font-size: 0.8rem; letter-spacing: 0.14em; text-transform: uppercase;
+  margin: 0;
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 13vw, 4.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.warn {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.4rem, 6.5vw, 1.9rem);
+  line-height: 1.1;
+  color: var(--warn);
+  margin: 0;
+  min-height: 2.3em;
+  text-wrap: balance;
+}
+.warn.shake { animation: shake 0.45s; }
+.buttons { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+button {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 30px;
+  cursor: pointer;
+  color: var(--ink);
+  box-shadow: 5px 5px 0 var(--shade);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+button:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--shade); }
+button:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+#yes { background: var(--yes); color: var(--yes-ink); transform-origin: left center; }
+#no { background: var(--no); transform-origin: left center; }
+.big {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 12vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.dots { font-weight: 700; font-size: 1.1rem; margin: 0; }
+.bar { height: 16px; border: 3px solid var(--ink); border-radius: 99px; overflow: hidden; background: #fff; }
+.bar span { display: block; height: 100%; width: 0; background: var(--ink); }
+.bar.run span { animation: fill 2s linear forwards; }
+.small-btn { font-size: 1rem; padding: 10px 18px; background: #fff; }
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.confetti i {
+  position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 2px;
+  animation: fall linear forwards;
+}
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+@keyframes fill { to { width: 100%; } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .warn.shake, .confetti i { animation: none; }
+  .confetti { display: none; }
+  .bar.run span { animation-duration: 0.01s; }
+  button { transition: none; }
+}
+</style>
+
+</head>
+<body>
+<main>
+  <section id="ask" class="screen">
+    <p class="eyebrow">Domanda importante</p>
+    <h1>Questo weekend usciamo?</h1>
+    <p id="warn" class="warn" aria-live="polite"></p>
+    <div class="buttons">
+      <button id="yes" type="button">Sì</button>
+      <button id="no" type="button">No</button>
+    </div>
+  </section>
+
+  <section id="sending" class="screen" hidden>
+    <p class="eyebrow">Un attimo</p>
+    <h1>Preparazione del sicario…</h1>
+    <div class="bar" id="bar"><span></span></div>
+  </section>
+
+  <section id="noResult" class="screen" hidden>
+    <p class="big">Vergogna, sei una pagliaccia.</p>
+    <p class="big">Ricorda, so dove abiti…</p>
+    <div class="buttons">
+      <button id="retry" class="small-btn" type="button">Ho sbagliato tasto</button>
+    </div>
+  </section>
+
+  <section id="yesResult" class="screen" hidden>
+    <p class="big">SIIII, incredibile, hai appena reso una persona molto molto felice AURA</p>
+  </section>
+</main>
+<div class="confetti" id="confetti" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var warnings = [
+    "Sei sicura di quello che stai facendo?",
+    "Sicura sicura? Ne sei convinta?"
+  ];
+  var noCount = 0;
+  var timer = null;
+  var screens = {
+    ask: document.getElementById("ask"),
+    sending: document.getElementById("sending"),
+    noResult: document.getElementById("noResult"),
+    yesResult: document.getElementById("yesResult")
+  };
+  var warn = document.getElementById("warn");
+  var yes = document.getElementById("yes");
+  var no = document.getElementById("no");
+  var bar = document.getElementById("bar");
+
+  function show(name) {
+    Object.keys(screens).forEach(function (k) { screens[k].hidden = (k !== name); });
+  }
+
+  function resize() {
+    yes.style.transform = "scale(" + (1 + noCount * 0.18) + ")";
+    no.style.transform = "scale(" + Math.max(0.6, 1 - noCount * 0.15) + ")";
+    yes.style.marginRight = (noCount * 22) + "px";
+  }
+
+  function confetti() {
+    var box = document.getElementById("confetti");
+    var colors = ["#17a56b", "#ff4d2e", "#2b1241", "#ffffff", "#ffc928"];
+    box.innerHTML = "";
+    for (var i = 0; i < 60; i++) {
+      var p = document.createElement("i");
+      p.style.left = Math.random() * 100 + "%";
+      p.style.background = colors[i % colors.length];
+      p.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+      p.style.animationDelay = (Math.random() * 0.8) + "s";
+      box.appendChild(p);
+    }
+  }
+
+  yes.addEventListener("click", function () {
+    clearTimeout(timer);
+    show("yesResult");
+    confetti();
+  });
+
+  no.addEventListener("click", function () {
+    noCount++;
+    if (noCount <= warnings.length) {
+      warn.textContent = warnings[noCount - 1];
+      warn.classList.remove("shake");
+      void warn.offsetWidth;
+      warn.classList.add("shake");
+      resize();
+      return;
+    }
+    show("sending");
+    bar.classList.remove("run");
+    void bar.offsetWidth;
+    bar.classList.add("run");
+    timer = setTimeout(function () { show("noResult"); }, 2100);
+  });
+
+  document.getElementById("retry").addEventListener("click", function () {
+    noCount = 0;
+    warn.textContent = "";
+    yes.style.transform = "";
+    no.style.transform = "";
+    yes.style.marginRight = "";
+    show("ask");
+  });
+})();
+</script>
+</body>
+</html>
